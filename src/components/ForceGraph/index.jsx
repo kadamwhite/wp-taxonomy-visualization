@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PureComponent, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import {
   forceSimulation,
@@ -13,7 +13,7 @@ import DangerousInline from '../DangerousInline';
 
 import { getAllPosts } from '../../services/api';
 
-class ForceGraph extends React.Component {
+class ForceGraph extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -85,12 +85,19 @@ class ForceGraph extends React.Component {
 }
 
 ForceGraph.propTypes = {
-  dispatch: React.PropTypes.func.isRequired,
-  posts: React.PropTypes.array.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  posts: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.shape({
+      rendered: PropTypes.string.isRequired,
+    }),
+    categories: PropTypes.arrayOf(PropTypes.number),
+    tags: PropTypes.arrayOf(PropTypes.number),
+  })).isRequired,
 };
 
-const mapStateToProps = (state) => ({
-  posts: state.posts
+const mapStateToProps = state => ({
+  posts: state.posts,
 });
 
 export default connect(mapStateToProps)(ForceGraph);

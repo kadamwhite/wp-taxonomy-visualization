@@ -1,7 +1,7 @@
 import React from 'react';
 
-import Logo from './Logo';
-import Hello from './Hello';
+// import Logo from './Logo';
+// import Hello from './Hello';
 import ForceGraph from './ForceGraph';
 
 const App = () => (

@@ -3,6 +3,12 @@ import WPAPI from 'wpapi';
 
 const api = WPAPI.site('http://website.loc/wp-json');
 
+function flatten(arrOfArrs) {
+  return arrOfArrs.reduce((combined, arr) => combined.concat(arr), []);
+}
+
+function noop() {}
+
 /**
  * Take a WPRequest instance and a method to run each time a new set of results
  * is returned
@@ -11,9 +17,10 @@ const api = WPAPI.site('http://website.loc/wp-json');
  * @param {Function}  [batchCb] Callback function to call with each new batch
  * @returns {Promise} A promise that resolves to the full set of results
  */
-export function all(wpReq, batchCb = function noop() {}) {
+export function all(wpReq, batchCb = noop) {
   return wpReq.then((response) => {
     batchCb(response);
+
     if (!(response._paging && response._paging.next)) {
       return response;
     }
@@ -22,12 +29,41 @@ export function all(wpReq, batchCb = function noop() {}) {
     return Promise.all([
       response,
       all(response._paging.next, batchCb),
-    ]).then((responses) => {
-      return responses.reduce((combined, resp) => combined.concat(resp), []);
-    });
+    ])
+      .then(responses => flatten(responses));
   });
 }
 
+function getAllInParallel(resourceFactory, perRequest, perBatch, batchCb = noop) {
+  // Make a new request using the provided factory method
+  return resourceFactory()
+    .perPage(perRequest)
+    .headers()
+    .then((headers) => {
+      // Create an integer array of all valid pages, then split into batches
+      // based on the perBatch count provided in arguments
+      const pages = Array.from({
+        length: headers['x-wp-totalpages'],
+      }, (v, i) => i + 1);
+      const batches = [];
+      for (let i = 0; i < pages.length; i += perBatch) {
+        batches.push(pages.slice(i, i + perBatch));
+      }
+
+      // Iterate through the batches, requesting all pages in each batch in
+      // parallel and calling batchCb on each individual batch
+      return batches.reduce((lastBatch, batch) => lastBatch.then((combined) => {
+        return Promise.all(batch.map(page => resourceFactory().page(page).get()))
+          .then((results) => {
+            const batchPosts = flatten(results);
+            batchCb(batchPosts);
+            return combined.concat(batchPosts);
+          });
+      }), Promise.resolve([]));
+    });
+}
+
 export function getAllPosts(batchCb) {
-  return all(api.posts(), batchCb);
+  return getAllInParallel(() => api.posts(), 10, 5, batchCb);
+  // return all(api.posts().perPage(2), batchCb);
 }
