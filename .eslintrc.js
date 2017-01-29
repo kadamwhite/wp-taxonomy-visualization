@@ -4,6 +4,15 @@ module.exports = {
     browser: true
   },
   rules: {
-    'comma-dangle': ['error', 'always-multiline']
+    'comma-dangle': ['error', 'always-multiline'],
+    'space-before-function-paren': ['error', {
+        anonymous: 'never',
+        named: 'never',
+        asyncArrow: 'ignore'
+    }],
+    'arrow-parens': ['error', 'as-needed', {
+      requireForBlockBody: true
+    }],
+    'arrow-body-style': ['off']
   }
 };

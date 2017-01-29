@@ -1,5 +1,6 @@
 const { resolve } = require('path');
 const webpack = require('webpack');
+const findCacheDir = require('find-cache-dir');
 const objectHash = require('node-object-hash');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -51,7 +52,18 @@ module.exports = {
       {
         test: /\.jsx?$/,
         use: [
-          'babel-loader',
+          {
+            loader: 'babel-loader',
+            options: {
+              // This is a feature of `babel-loader` for webpack (not Babel itself).
+              // It enables caching results in ./node_modules/.cache/react-scripts/
+              // directory for faster rebuilds. We use findCacheDir() because of:
+              // https://github.com/facebookincubator/create-react-app/issues/483
+              cacheDirectory: findCacheDir({
+                name: 'react-scripts'
+              })
+            }
+          }
         ],
         exclude: /node_modules/
       },

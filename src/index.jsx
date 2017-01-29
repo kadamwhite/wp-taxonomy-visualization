@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 
 import { AppContainer } from 'react-hot-loader';
 // AppContainer is a necessary wrapper component for HMR
@@ -8,10 +9,17 @@ import './global.styl';
 
 import App from './components/App';
 
+import makeStore from './store';
+
+const store = makeStore();
+window.store = store;
+
 const render = (Component) => {
   ReactDOM.render(
     <AppContainer>
-      <Component />
+      <Provider store={store}>
+        <Component />
+      </Provider>
     </AppContainer>,
     document.getElementById('root')
   );
