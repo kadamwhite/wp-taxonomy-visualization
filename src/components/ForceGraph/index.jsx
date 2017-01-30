@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { PureComponent, PropTypes } from 'react';
 import { select } from 'd3';
 import {
@@ -15,9 +16,18 @@ class ForceGraph extends PureComponent {
 
   componentDidMount() {
     this.initSimulation();
+
+    if (this.props.posts.length) {
+      // Data is pre-loaded! Let's get things going
+      this.runSimulation();
+    }
   }
 
   componentDidUpdate() {
+    this.runSimulation();
+  }
+
+  runSimulation() {
     if (this.simulation) {
       this.simulation.stop();
     }
@@ -39,13 +49,14 @@ class ForceGraph extends PureComponent {
     nodes.enter()
       .append('circle')
         .attr('class', d => styles[d.type])
-        .attr('r', d => d.type === 'post' ? 5 : 10)
+        .attr('r', d => (d.type === 'post' ? 5 : 10))
         .attr('title', d => d.id);
     nodes.exit()
       .remove();
 
     this.simulation
       .nodes(graph.nodes)
+      // eslint-disable-next-line prefer-arrow-callback
       .on('tick', function onTick() {
         links
           .attr('x1', d => d.source.x)
@@ -92,11 +103,27 @@ class ForceGraph extends PureComponent {
   }
 
   makeNodes() {
-    const { posts } = this.props;
+    const { posts, categories, tags } = this.props;
 
     const nodes = [];
     const edges = [];
     const nodesMap = {};
+
+    categories.forEach((cat) => {
+      nodes.push({
+        title: cat.title,
+        id: `${cat.id}`,
+        type: 'category'
+      });
+    });
+
+    tags.forEach((tag) => {
+      nodes.push({
+        title: tag.title,
+        id: `${tag.id}`,
+        type: 'tag'
+      });
+    });
 
     posts.forEach((post) => {
       const node = {
@@ -108,16 +135,6 @@ class ForceGraph extends PureComponent {
       nodesMap[node.id] = node;
 
       post.categories.forEach((cat) => {
-        if (!nodesMap[cat]) {
-          const catNode = {
-            title: '',
-            id: `${cat}`,
-            type: 'category',
-          };
-          nodes.push(catNode);
-          nodesMap[catNode.id] = catNode;
-        }
-
         edges.push({
           source: `${post.id}`,
           target: `${cat}`,
@@ -126,16 +143,6 @@ class ForceGraph extends PureComponent {
       });
 
       post.tags.forEach((tag) => {
-        if (!nodesMap[tag]) {
-          const tagNode = {
-            title: '',
-            id: `${tag}`,
-            type: 'tag',
-          };
-          nodes.push(tagNode);
-          nodesMap[tagNode.id] = tagNode;
-        }
-
         edges.push({
           source: `${post.id}`,
           target: `${tag}`,
@@ -147,8 +154,8 @@ class ForceGraph extends PureComponent {
     return {
       nodes,
       edges,
-      nodesMap
-    }
+      nodesMap,
+    };
   }
 
   render() {

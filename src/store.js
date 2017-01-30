@@ -2,6 +2,7 @@ import { createStore, applyMiddleware } from 'redux';
 import createLogger from 'redux-logger';
 import createSagaMiddleware from 'redux-saga';
 import reducer from './reducers';
+import data from './wp-data';
 
 /**
  * Helper function to create store with provided reducer and initial state.
@@ -21,6 +22,7 @@ export default function makeStore() {
 
   const store = createStore(
     reducer,
+    data,
     applyMiddleware(...middleware),
   );
 

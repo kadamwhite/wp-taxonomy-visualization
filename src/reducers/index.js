@@ -12,7 +12,7 @@ export function postsReducer(state = [], action) {
       title: post.title.rendered,
       id: post.id,
       categories: post.categories,
-      tags: post.tags
+      tags: post.tags,
     })));
   }
 
