@@ -65,5 +65,12 @@ function getAllInParallel(resourceFactory, perRequest, perBatch, batchCb = noop)
 
 export function getAllPosts(batchCb) {
   return getAllInParallel(() => api.posts(), 10, 5, batchCb);
-  // return all(api.posts().perPage(2), batchCb);
+}
+
+export function getAllCategories(batchCb) {
+  return getAllInParallel(() => api.categories(), 10, 5, batchCb);
+}
+
+export function getAllTags(batchCb) {
+  return getAllInParallel(() => api.tags(), 10, 5, batchCb);
 }
