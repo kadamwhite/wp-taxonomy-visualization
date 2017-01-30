@@ -1,11 +1,13 @@
 import React, { PureComponent, PropTypes } from 'react';
 import { connect } from 'react-redux';
 
-// import {
+import {
 //   addPosts,
 //   addTags,
 //   addCategories,
-// } from '../actions';
+  selectNode,
+  deselectNode,
+} from '../actions';
 
 // import {
 //   getAllPosts,
@@ -35,14 +37,23 @@ class App extends PureComponent {
   }
 
   render() {
-    const { posts, categories, tags } = this.props;
+    const {
+      posts,
+      categories,
+      tags,
+      onDeselectNode,
+      onSelectNode,
+    } = this.props;
+
     return (
       <ForceGraph
-        width={600}
+        width={1200}
         height={600}
         posts={posts}
         categories={categories}
         tags={tags}
+        onMouseOver={onSelectNode}
+        onMouseOut={onDeselectNode}
       />
     );
   }
@@ -76,4 +87,9 @@ const mapStateToProps = state => ({
   categories: state.categories,
 });
 
-export default connect(mapStateToProps)(App);
+const mapDispatchToProps = dispatch => ({
+  onSelectNode: (node) => dispatch(selectNode(node)),
+  onDeselectNode: () => dispatch(deselectNode())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

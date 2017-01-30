@@ -29,3 +29,18 @@ export function addCategories(cats) {
     payload: cats,
   };
 }
+
+export const SELECT_NODE = 'SELECT_NODE';
+export function selectNode(node) {
+  return {
+    type: SELECT_NODE,
+    payload: node,
+  };
+}
+
+export const DESELECT_NODE = 'DESELECT_NODE';
+export function deselectNode() {
+  return {
+    type: DESELECT_NODE,
+  };
+}

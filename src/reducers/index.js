@@ -45,6 +45,18 @@ export function tagsReducer(state = [], action) {
   return state;
 }
 
+export function selectedNodeReducer(state = null, action) {
+  if (action.type === actionTypes.SELECT_NODE) {
+    return Object.assign({}, action.payload);
+  }
+
+  if (action.type === actionTypes.DESELECT_NODE) {
+    return null;
+  }
+
+  return state;
+}
+
 /*
  * Combine reducers to produce single reducer for state.
  * Each reducer handles a sub-tree of the state tree based
@@ -54,4 +66,5 @@ export default combineReducers({
   posts: postsReducer,
   categories: categoriesReducer,
   tags: tagsReducer,
+  selected: selectedNodeReducer,
 });

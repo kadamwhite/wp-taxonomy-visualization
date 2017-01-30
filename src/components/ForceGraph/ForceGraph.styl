@@ -1,14 +1,38 @@
+post-fill = #f797f5;
+post-stroke = #733284;
+tag-fill = #fba429;
+tag-stroke = #9e5b19;
+cat-fill = #6cb5f1;
+cat-stroke = #355169;
 circle.post {
-  fill: red;
+  fill: post-fill;
+  stroke: post-stroke;
+
+  &:hover {
+    fill: darken(post-fill, 25%);
+    stroke: darken(post-stroke, 25%);
+  }
 }
 circle.tag {
-  fill: green;
+  fill: tag-fill;
+  stroke: tag-stroke;
+
+  &:hover {
+    fill: darken(tag-fill, 25%);
+    stroke: darken(tag-stroke, 25%);
+  }
 }
 circle.category {
-  fill: blue;
+  fill: cat-fill;
+  stroke: cat-stroke;
+
+  &:hover {
+    fill: darken(cat-fill, 25%);
+    stroke: darken(cat-stroke, 25%);
+  }
 }
 
 line {
-  strokeWidth: 1px;
-  stroke: grey;
+  stroke-width: 1px;
+  stroke: #b1b1b1;
 }
