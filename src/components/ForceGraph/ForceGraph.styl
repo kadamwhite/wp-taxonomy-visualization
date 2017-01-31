@@ -4,35 +4,38 @@ tag-fill = #fba429;
 tag-stroke = #9e5b19;
 cat-fill = #6cb5f1;
 cat-stroke = #355169;
-circle.post {
+
+.node {
+  cursor: pointer;
+}
+.post {
   fill: post-fill;
   stroke: post-stroke;
 
-  &:hover {
+  &.selected {
     fill: darken(post-fill, 25%);
     stroke: darken(post-stroke, 25%);
   }
 }
-circle.tag {
+.tag {
   fill: tag-fill;
   stroke: tag-stroke;
 
-  &:hover {
+  &.selected {
     fill: darken(tag-fill, 25%);
     stroke: darken(tag-stroke, 25%);
   }
 }
-circle.category {
+.category {
   fill: cat-fill;
   stroke: cat-stroke;
 
-  &:hover {
+  &.selected {
     fill: darken(cat-fill, 25%);
     stroke: darken(cat-stroke, 25%);
   }
 }
-
-line {
+.edge {
   stroke-width: 1px;
   stroke: #b1b1b1;
 }

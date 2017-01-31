@@ -10,7 +10,7 @@ export function postsReducer(state = [], action) {
     // Limit to only certain keys
     return state.concat(action.payload.map(post => ({
       title: post.title.rendered,
-      id: post.id,
+      id: post.id.toString(),
       categories: post.categories,
       tags: post.tags,
     })));
@@ -23,7 +23,7 @@ export function categoriesReducer(state = [], action) {
   if (action.type === actionTypes.ADD_CATEGORIES) {
     return state.concat(action.payload.map(cat => ({
       title: cat.name,
-      id: cat.id,
+      id: cat.id.toString(),
       description: cat.description,
       count: cat.count,
     })));
@@ -36,7 +36,7 @@ export function tagsReducer(state = [], action) {
   if (action.type === actionTypes.ADD_TAGS) {
     return state.concat(action.payload.map(tag => ({
       title: tag.name,
-      id: tag.id,
+      id: tag.id.toString(),
       description: tag.description,
       count: tag.count,
     })));
@@ -47,7 +47,10 @@ export function tagsReducer(state = [], action) {
 
 export function selectedNodeReducer(state = null, action) {
   if (action.type === actionTypes.SELECT_NODE) {
-    return Object.assign({}, action.payload);
+    // Only update if the selected item has changed
+    return action.payload.id !== (state && state.id) ?
+      Object.assign({}, action.payload) :
+      state;
   }
 
   if (action.type === actionTypes.DESELECT_NODE) {
