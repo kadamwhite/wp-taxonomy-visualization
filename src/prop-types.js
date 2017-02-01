@@ -11,15 +11,15 @@ export const taxonomyNode = PropTypes.shape({
 export const postNode = PropTypes.shape({
   title: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
-  categories: PropTypes.arrayOf(PropTypes.number),
-  tags: PropTypes.arrayOf(PropTypes.number),
+  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  tags: PropTypes.arrayOf(PropTypes.string).isRequired,
 });
 
 export const anyNode = PropTypes.shape({
   title: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
-  categories: PropTypes.arrayOf(PropTypes.number),
-  tags: PropTypes.arrayOf(PropTypes.number),
+  categories: PropTypes.arrayOf(PropTypes.string),
+  tags: PropTypes.arrayOf(PropTypes.string),
   description: PropTypes.string,
   count: PropTypes.number,
 });

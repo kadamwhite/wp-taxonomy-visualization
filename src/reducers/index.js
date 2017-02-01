@@ -11,8 +11,8 @@ export function postsReducer(state = [], action) {
     return state.concat(action.payload.map(post => ({
       title: post.title.rendered,
       id: post.id.toString(),
-      categories: post.categories,
-      tags: post.tags,
+      categories: post.categories.map(term => `t${term}`),
+      tags: post.tags.map(term => `t${term}`),
     })));
   }
 
@@ -23,7 +23,7 @@ export function categoriesReducer(state = [], action) {
   if (action.type === actionTypes.ADD_CATEGORIES) {
     return state.concat(action.payload.map(cat => ({
       title: cat.name,
-      id: cat.id.toString(),
+      id: `t${cat.id}`,
       description: cat.description,
       count: cat.count,
     })));
@@ -36,7 +36,7 @@ export function tagsReducer(state = [], action) {
   if (action.type === actionTypes.ADD_TAGS) {
     return state.concat(action.payload.map(tag => ({
       title: tag.name,
-      id: tag.id.toString(),
+      id: `t${tag.id}`,
       description: tag.description,
       count: tag.count,
     })));
