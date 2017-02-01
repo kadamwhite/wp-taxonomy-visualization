@@ -22,6 +22,10 @@ function radius(d) {
   return d.type === 'post' ? 5 : 10;
 }
 
+function isTerm(node) {
+  return node.type === 'category' || node.type === 'tag';
+}
+
 class ForceGraph extends PureComponent {
 
   constructor(props) {
@@ -32,6 +36,11 @@ class ForceGraph extends PureComponent {
       edges: [],
       nodesMap: {},
       edgesMap: {},
+    };
+
+    this.coincidence = {
+      all: new CoincidenceMatrix(),
+      terms: new CoincidenceMatrix(),
     };
 
     this.state = {
@@ -67,41 +76,17 @@ class ForceGraph extends PureComponent {
     return false;
   }
 
-  filterNodes(graph, selectedNode) {
+  filterNodes() {
+    const graph = this.graph;
+    const selectedNode = this.state.selectedNode;
     // We will be updating this.graph with new properties
     const filteredNodes = [];
     const filteredNodesMap = {};
     const filteredEdges = [];
 
-    const coincidence = new CoincidenceMatrix();
-    const termCoincidence = new CoincidenceMatrix();
-
-    const isTerm = node => (node.type === 'category' || node.type === 'tag');
-
-    graph.nodes.forEach((node) => {
-      if (isTerm(node)) {
-        // Categories and tags relate to each other only indirectly
-        return;
-      }
-      // Build a representation of what tags coincide
-      const categoriesAndTags = node.categories.concat(node.tags);
-      categoriesAndTags.forEach((termId) => {
-        categoriesAndTags.forEach((coincidentTermId) => {
-          // The post relates to each term
-          coincidence.set(node.id, termId);
-          coincidence.set(node.id, coincidentTermId);
-          // The terms are also related
-          coincidence.set(termId, coincidentTermId);
-          // Store one separate matrix containing only terms, for use when a
-          // node has not been selected
-          termCoincidence.set(termId, coincidentTermId);
-        });
-      });
-    });
-
     if (selectedNode) {
       filteredNodes.push(selectedNode);
-      coincidence.for(selectedNode.id).forEach((coincidentId) => {
+      this.coincidence.all.for(selectedNode.id).forEach((coincidentId) => {
         if (selectedNode.id === coincidentId) {
           // A term never connects to itself
           return;
@@ -116,7 +101,7 @@ class ForceGraph extends PureComponent {
       // Push all term nodes into the filtered nodes array
       graph.nodes.forEach(node => isTerm(node) && filteredNodes.push(node));
       // Push all term relation pairs into the filtered edges array
-      termCoincidence.uniquePairs().forEach(([source, target]) => filteredEdges.push({
+      this.coincidence.terms.uniquePairs().forEach(([source, target]) => filteredEdges.push({
         source,
         target,
       }));
@@ -168,7 +153,7 @@ class ForceGraph extends PureComponent {
     }
     const { selectedNode } = this.state;
     const selectedNodeId = selectedNode && selectedNode.id;
-    const filteredGraph = this.filterNodes(this.graph, selectedNode);
+    const filteredGraph = this.filterNodes();
     console.log(filteredGraph);
     const svg = select(this.svg);
     const linksGroup = svg.select('.edges');
@@ -190,8 +175,6 @@ class ForceGraph extends PureComponent {
       .data(filteredGraph.nodes, d => d.id);
     nodes.exit().remove();
     const enteringNodes = nodes.enter().append('circle')
-      .attr('class', d => `${classes.node} ${classes[d.type]}`)
-      .attr('r', d => radius(d))
       .attr('title', d => d.id)
       .on('click', (d) => {
         const { selectedNode } = this.state;
@@ -206,6 +189,8 @@ class ForceGraph extends PureComponent {
         }
       });
     nodes.merge(enteringNodes)
+      .attr('r', d => radius(d))
+      .attr('class', d => `${classes.node} ${classes[d.type]}`)
       .classed(classes.selected, (d) => {
         const { selectedNode } = this.state;
         return selectedNode && selectedNode.id === d.id;
@@ -374,6 +359,29 @@ class ForceGraph extends PureComponent {
         });
       }));
     }));
+
+    this.coincidence.all.clear();
+    this.coincidence.terms.clear();
+    nodes.forEach((node) => {
+      if (isTerm(node)) {
+        // Categories and tags relate to each other only indirectly
+        return;
+      }
+      // Build a representation of what tags coincide
+      const categoriesAndTags = node.categories.concat(node.tags);
+      categoriesAndTags.forEach((termId) => {
+        categoriesAndTags.forEach((coincidentTermId) => {
+          // The post relates to each term
+          this.coincidence.all.set(node.id, termId);
+          this.coincidence.all.set(node.id, coincidentTermId);
+          // The terms are also related
+          this.coincidence.all.set(termId, coincidentTermId);
+          // Store one separate matrix containing only terms, for use when a
+          // node has not been selected
+          this.coincidence.terms.set(termId, coincidentTermId);
+        });
+      });
+    });
 
     // Update graph object
     this.graph.nodes = nodes;

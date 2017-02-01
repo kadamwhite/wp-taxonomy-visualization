@@ -43,7 +43,21 @@ export default class CoincidenceMatrix {
         if (id === coincidentId) {
           return;
         }
-        const key = [id, coincidentId].sort().join();
+        const key = [id, coincidentId].sort().join(',');
+        uniquePairs[key] = true;
+      });
+    });
+    return Object.keys(uniquePairs).map(pair => pair.split(','));
+  }
+
+  uniquePairsFor(ids, omitId) {
+    const uniquePairs = {};
+    ids.forEach((id) => {
+      Object.keys(this.nodes[id]).forEach((coincidentId) => {
+        if (id === coincidentId || (omitId && id === omitId)) {
+          return;
+        }
+        const key = [id, coincidentId].sort().join(',');
         uniquePairs[key] = true;
       });
     });

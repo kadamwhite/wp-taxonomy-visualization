@@ -10,29 +10,29 @@ const Selected = ({ node, categories, tags }) => (
     <h2>
       {node.type ? `${node.type.replace(/^\w/, node.type[0].toUpperCase())}: ` : null}
       <DangerousInline html={`${node.title} (#${node.id})`} /></h2>
-    <a
+    {node.type === 'post' ? (<a
       target="_blank"
       rel="noopener noreferrer"
       href={`http://bocoup.com?p=${node.id}`}
     >
       View {node.type}
-    </a>
+    </a>) : null}
     {node.description ? (
       <p>{node.description}</p>
     ) : null}
     {categories && categories.length ? (
       <ul>
         <li>Categories:</li>
-        {categories.map(cat => (<li key={cat}>
-          {cat}
+        {categories.map(cat => (<li key={`cat${cat.id}`}>
+          <DangerousInline html={`${cat.title} (#${cat.id})`} />
         </li>))}
       </ul>
     ) : null}
     {tags && tags.length ? (
       <ul>
         <li>Tags:</li>
-        {node.tags.map(tag => (<li key={tag}>
-          {tag}
+        {tags.map(tag => (<li key={`tag${tag.id}`}>
+          <DangerousInline html={`${tag.title} (#${tag.id})`} />
         </li>))}
       </ul>
     ) : null}
