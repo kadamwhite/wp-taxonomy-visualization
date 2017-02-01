@@ -49,7 +49,7 @@ class ForceGraphContainer extends PureComponent {
 }
 
 ForceGraphContainer.propTypes = {
-  requestData: PropTypes.func.isRequired,
+  // requestData: PropTypes.func.isRequired,
   onSelectNode: PropTypes.func.isRequired,
   posts: PropTypes.arrayOf(postNode).isRequired,
   categories: PropTypes.arrayOf(taxonomyNode).isRequired,
@@ -64,12 +64,12 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  requestData: () => Promise.all([
-    getAllTags((tags) => dispatch(addTags(tags))),
-    getAllCategories((cats) => dispatch(addCategories(cats))),
-    getAllPosts((posts) => dispatch(addPosts(posts))),
-  ]),
-  onSelectNode: (node) => dispatch(selectNode(node)),
+  // requestData: () => Promise.all([
+  //   getAllTags(tags => dispatch(addTags(tags))),
+  //   getAllCategories(cats => dispatch(addCategories(cats))),
+  //   getAllPosts(posts => dispatch(addPosts(posts))),
+  // ]),
+  onSelectNode: node => dispatch(selectNode(node)),
   // onDeselectNode: () => dispatch(deselectNode())
 });
 

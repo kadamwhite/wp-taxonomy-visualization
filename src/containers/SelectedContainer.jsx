@@ -5,21 +5,28 @@ import { anyNode, taxonomyNode } from '../prop-types';
 
 import Selected from '../components/Selected';
 
-const SelectedContainer = (props) => (
+const SelectedContainer = props => (props.node ?
   <Selected
     node={props.node}
     categories={props.categories}
     tags={props.tags}
-  />
+  /> :
+  null
 );
 
 SelectedContainer.propTypes = {
   node: anyNode,
-  categories: PropTypes.arrayOf(taxonomyNode),
-  tags: PropTypes.arrayOf(taxonomyNode),
+  categories: PropTypes.arrayOf(taxonomyNode).isRequired,
+  tags: PropTypes.arrayOf(taxonomyNode).isRequired,
 };
 
-const mapStateToProps = (state) => ({
+SelectedContainer.defaultProps = {
+  node: null,
+  categories: [],
+  tags: [],
+};
+
+const mapStateToProps = state => ({
   node: state.selected,
   categories: state.selected && Array.isArray(state.selected.categories) ?
     state.selected.categories.map(catId => state.categories.find(cat => cat.id === catId)) :
@@ -27,6 +34,6 @@ const mapStateToProps = (state) => ({
   tags: state.selected && Array.isArray(state.selected.tags) ?
     state.selected.tags.map(tagId => state.tags.find(tag => tag.id === tagId)) :
     [],
-})
+});
 
 export default connect(mapStateToProps)(SelectedContainer);

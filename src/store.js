@@ -26,7 +26,7 @@ export default function makeStore() {
     applyMiddleware(...middleware),
   );
 
-  store.subscribe(() => console.log('Something changed'));
+  // store.subscribe(() => console.log('Something changed'));
 
   return store;
 }

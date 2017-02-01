@@ -34,6 +34,7 @@ export function all(wpReq, batchCb = noop) {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 function getAllInParallel(resourceFactory, perRequest, perBatch, batchCb = noop) {
   // Make a new request using the provided factory method
   return resourceFactory()

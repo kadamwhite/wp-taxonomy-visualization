@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React, { PureComponent, PropTypes } from 'react';
 import { select, mouse } from 'd3-selection';
 import {
@@ -9,13 +8,12 @@ import {
   forceLink,
 } from 'd3-force';
 import debounce from 'lodash.debounce';
-
 import { postNode, taxonomyNode } from '../../prop-types';
-
 import classes from './ForceGraph.styl';
+
 const classSelectors = Object.keys(classes)
   .reduce((selectors, className) => Object.assign({
-    [className]: `.${classes[className]}`
+    [className]: `.${classes[className]}`,
   }, selectors), {});
 
 function radius(d) {
@@ -35,7 +33,7 @@ class ForceGraph extends PureComponent {
     };
 
     this.state = {
-      selectedNode: null
+      selectedNode: null,
     };
   }
 
@@ -46,7 +44,6 @@ class ForceGraph extends PureComponent {
       // Data is pre-loaded! Let's get things going
       this.runSimulation();
     }
-    console.log('cdm');
   }
 
   shouldComponentUpdate() {
@@ -58,9 +55,7 @@ class ForceGraph extends PureComponent {
     if (this.simulation) {
       this.simulation.stop();
     }
-    const { width, height } = this.props;
     const graph = this.makeNodes();
-    window.graph = graph;
     const svg = select(this.svg);
     const linksGroup = svg.select('.edges');
     const nodesGroup = svg.select('.nodes');
@@ -126,15 +121,17 @@ class ForceGraph extends PureComponent {
           .attr('x2', d => d.target.x)
           .attr('y2', d => d.target.y);
 
-        // See https://bl.ocks.org/mbostock/1129492 -- constrain the position
-        // of nodes within the rectangular bounds of the containing SVG element.
-        // As a side-effect of updating the node's cx and cy attributes, we
-        // update the node positions to be within the range [radius, width - radius]
-        // for x, [radius, height - radius] for y.
         nodesGroup.selectAll(classSelectors.node)
           .attr('transform', (d) => {
+            // See https://bl.ocks.org/mbostock/1129492 -- constrain the position
+            // of nodes within the rectangular bounds of the containing SVG element.
+            // As a side-effect of updating the node's cx and cy attributes, we
+            // update the node positions to be within the range [radius, width - radius]
+            // for x, [radius, height - radius] for y.
+            /* eslint-disable no-param-reassign */
             d.x = Math.max(radius(d), Math.min(width - radius(d), d.x));
             d.y = Math.max(radius(d), Math.min(height - radius(d), d.y));
+            /* eslint-enale no-param-reassign */
             return `translate(${d.x},${d.y})`;
           });
 
@@ -211,7 +208,7 @@ class ForceGraph extends PureComponent {
     [
       posts,
     ].forEach(postTypeCollection => postTypeCollection.forEach((post) => {
-      const node = createOrUpdateNode({
+      createOrUpdateNode({
         title: post.title,
         id: post.id,
         categories: post.categories,
@@ -222,7 +219,7 @@ class ForceGraph extends PureComponent {
       [
         { collection: post.categories, type: 'category' },
         { collection: post.tags, type: 'tag' },
-      ].forEach((taxonomy) => taxonomy.collection.forEach((term) => {
+      ].forEach(taxonomy => taxonomy.collection.forEach((term) => {
         // D3 will throw an error if an edge is encountered for a node that
         // does not exist, so ensure the relevant node has been created
         if (!nodesMap[term]) {
@@ -252,8 +249,7 @@ class ForceGraph extends PureComponent {
   }
 
   render() {
-    const { posts, width, height } = this.props;
-    const { selectedNode } = this.state;
+    const { width, height } = this.props;
 
     return (
       <div>
