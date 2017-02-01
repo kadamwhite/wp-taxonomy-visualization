@@ -58,7 +58,7 @@ class ForceGraph extends PureComponent {
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps) {
     const dataPropsChanged = valueChanged(this.props, nextProps, ['posts', 'categories', 'tags']);
     const dimensionsChanged = valueChanged(this.props, nextProps, ['width', 'height']);
     // const selectionChanged = valueChanged(this.state, nextState, ['selectedNode']);
@@ -81,7 +81,6 @@ class ForceGraph extends PureComponent {
     const selectedNode = this.state.selectedNode;
     // We will be updating this.graph with new properties
     const filteredNodes = [];
-    const filteredNodesMap = {};
     const filteredEdges = [];
 
     if (selectedNode) {
@@ -147,22 +146,33 @@ class ForceGraph extends PureComponent {
     };
   }
 
+  isSelectedNode(id) {
+    const { selectedNode } = this.state;
+    return !!(selectedNode && (selectedNode.id === id));
+  }
+
   runSimulation() {
     if (this.simulation) {
       this.simulation.stop();
     }
+
     const { selectedNode } = this.state;
-    const selectedNodeId = selectedNode && selectedNode.id;
     const filteredGraph = this.filterNodes();
-    console.log(filteredGraph);
+
     const svg = select(this.svg);
     const linksGroup = svg.select('.edges');
     const nodesGroup = svg.select('.nodes');
 
+    const displayEdges = selectedNode ?
+      filteredGraph.edges.filter(edge => (
+        !this.isSelectedNode(edge.source) && !this.isSelectedNode(edge.target)
+      )) :
+      filteredGraph.edges;
+
     const links = linksGroup
       .selectAll('line')
-      .data(filteredGraph.edges, (d) => {
-        const {source, target} = d;
+      .data(displayEdges, (d) => {
+        const { source, target } = d;
         return [source, target].sort().join();
       });
     links.exit()
@@ -174,27 +184,24 @@ class ForceGraph extends PureComponent {
       .selectAll('circle')
       .data(filteredGraph.nodes, d => d.id);
     nodes.exit().remove();
+    /* eslint-disable no-shadow */// Need to re-declare selectedNode
     const enteringNodes = nodes.enter().append('circle')
       .attr('title', d => d.id)
       .on('click', (d) => {
-        const { selectedNode } = this.state;
-        if (selectedNode && selectedNode.id === d.id) {
+        if (this.isSelectedNode(d.id)) {
           this.setState({
-            selectedNode: null
+            selectedNode: null,
           }, this.runSimulation);
         } else {
           this.setState({
-            selectedNode: d
+            selectedNode: d,
           }, this.runSimulation);
         }
       });
     nodes.merge(enteringNodes)
       .attr('r', d => radius(d))
       .attr('class', d => `${classes.node} ${classes[d.type]}`)
-      .classed(classes.selected, (d) => {
-        const { selectedNode } = this.state;
-        return selectedNode && selectedNode.id === d.id;
-      });
+      .classed(classes.selected, d => this.isSelectedNode(d.id));
 
     this.simulation.nodes(filteredGraph.nodes);
     this.simulation.force('links').links(filteredGraph.edges);

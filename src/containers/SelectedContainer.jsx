@@ -5,7 +5,7 @@ import { anyNode, taxonomyNode } from '../prop-types';
 
 import Selected from '../components/Selected';
 
-const SelectedContainer = ({node, categories, tags}) => {
+const SelectedContainer = ({ node, categories, tags }) => {
   if (!node) {
     return null;
   }
@@ -22,7 +22,7 @@ const SelectedContainer = ({node, categories, tags}) => {
       tags={filteredTags}
     />
   );
-}
+};
 
 SelectedContainer.propTypes = {
   node: anyNode,
