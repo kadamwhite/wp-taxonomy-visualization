@@ -7,7 +7,9 @@ import styles from './Selected.styl';
 
 const Selected = ({ node, categories, tags }) => (
   <div className={styles.selected}>
-    <h2><DangerousInline html={`${node.title} (#${node.id})`} /></h2>
+    <h2>
+      {node.type ? `${node.type.replace(/^\w/, node.type[0].toUpperCase())}: ` : null}
+      <DangerousInline html={`${node.title} (#${node.id})`} /></h2>
     <a
       target="_blank"
       rel="noopener noreferrer"
@@ -21,7 +23,7 @@ const Selected = ({ node, categories, tags }) => (
     {categories && categories.length ? (
       <ul>
         <li>Categories:</li>
-        {categories.map(cat => (<li>
+        {categories.map(cat => (<li key={cat}>
           {cat}
         </li>))}
       </ul>
@@ -29,7 +31,7 @@ const Selected = ({ node, categories, tags }) => (
     {tags && tags.length ? (
       <ul>
         <li>Tags:</li>
-        {node.tags.map(tag => (<li>
+        {node.tags.map(tag => (<li key={tag}>
           {tag}
         </li>))}
       </ul>

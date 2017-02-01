@@ -105,16 +105,16 @@ module.exports = {
       template: './index.html'
     }),
 
-    // Use hard source caching for faster rebuilds
-    new HardSourceWebpackPlugin({
-      cacheDirectory: resolve(__dirname, '.cache/webpack-source/[confighash]'),
-      recordsPath: resolve(__dirname, '.cache/webpack-source/[confighash]', 'records.json'),
+    // // Use hard source caching for faster rebuilds
+    // new HardSourceWebpackPlugin({
+    //   cacheDirectory: resolve(__dirname, '.cache/webpack-source/[confighash]'),
+    //   recordsPath: resolve(__dirname, '.cache/webpack-source/[confighash]', 'records.json'),
 
-      // Build a string value used by HardSource to determine which cache to
-      // use if [confighash] is in cacheDirectory, or if the cache should be
-      // replaced if [confighash] does not appear in cacheDirectory.
-      configHash: (webpackConfig) => objectHash().hash(webpackConfig)
-    }),
+    //   // Build a string value used by HardSource to determine which cache to
+    //   // use if [confighash] is in cacheDirectory, or if the cache should be
+    //   // replaced if [confighash] does not appear in cacheDirectory.
+    //   configHash: (webpackConfig) => objectHash().hash(webpackConfig)
+    // }),
   ],
 
 };

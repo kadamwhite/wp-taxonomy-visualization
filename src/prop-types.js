@@ -5,6 +5,7 @@ export const taxonomyNode = PropTypes.shape({
   id: PropTypes.string.isRequired,
   description: PropTypes.string,
   count: PropTypes.number,
+  type: PropTypes.string,
 });
 
 export const postNode = PropTypes.shape({

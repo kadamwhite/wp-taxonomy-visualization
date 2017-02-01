@@ -12,10 +12,14 @@
   }
 
   li {
-    display: inline;
-    :not(:last-child)::after {
+    display: inline-block;
+    margin-left: 0.25em;
+    &:not(:last-child):not(:first-child)::after {
       content: ','
       display: inline;
+    }
+    &:first-child {
+      margin-left: 0;
     }
   }
 }

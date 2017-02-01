@@ -10,6 +10,8 @@ import {
 import debounce from 'lodash.debounce';
 import { postNode, taxonomyNode } from '../../prop-types';
 import classes from './ForceGraph.styl';
+import { valueChanged } from '../../util';
+import CoincidenceMatrix from '../../coincidence-matrix';
 
 const classSelectors = Object.keys(classes)
   .reduce((selectors, className) => Object.assign({
@@ -42,41 +44,175 @@ class ForceGraph extends PureComponent {
 
     if (this.props.posts.length) {
       // Data is pre-loaded! Let's get things going
+      this.makeNodes();
       this.runSimulation();
     }
   }
 
-  shouldComponentUpdate() {
-    this.runSimulation();
+  shouldComponentUpdate(nextProps, nextState) {
+    const dataPropsChanged = valueChanged(this.props, nextProps, ['posts', 'categories', 'tags']);
+    const dimensionsChanged = valueChanged(this.props, nextProps, ['width', 'height']);
+    // const selectionChanged = valueChanged(this.state, nextState, ['selectedNode']);
+
+    // Update the node list if the data has changed
+    if (dataPropsChanged) {
+      this.makeNodes();
+    }
+
+    // Update the simulation if any data OR dimensions have changed
+    if (dataPropsChanged || dimensionsChanged) {
+      this.runSimulation();
+    }
+
     return false;
+  }
+
+  filterNodes(graph, selectedNode) {
+    // We will be updating this.graph with new properties
+    const filteredNodes = [];
+    const filteredNodesMap = {};
+    const filteredEdges = [];
+
+    const coincidence = new CoincidenceMatrix();
+    const termCoincidence = new CoincidenceMatrix();
+
+    const isTerm = node => (node.type === 'category' || node.type === 'tag');
+
+    graph.nodes.forEach((node) => {
+      if (isTerm(node)) {
+        // Categories and tags relate to each other only indirectly
+        return;
+      }
+      // Build a representation of what tags coincide
+      const categoriesAndTags = node.categories.concat(node.tags);
+      categoriesAndTags.forEach((termId) => {
+        categoriesAndTags.forEach((coincidentTermId) => {
+          // The post relates to each term
+          coincidence.set(node.id, termId);
+          coincidence.set(node.id, coincidentTermId);
+          // The terms are also related
+          coincidence.set(termId, coincidentTermId);
+          // Store one separate matrix containing only terms, for use when a
+          // node has not been selected
+          termCoincidence.set(termId, coincidentTermId);
+        });
+      });
+    });
+
+    if (selectedNode) {
+      filteredNodes.push(selectedNode);
+      coincidence.for(selectedNode.id).forEach((coincidentId) => {
+        if (selectedNode.id === coincidentId) {
+          // A term never connects to itself
+          return;
+        }
+        filteredNodes.push(graph.nodesMap[coincidentId]);
+        filteredEdges.push({
+          source: selectedNode.id,
+          target: coincidentId,
+        });
+      });
+    } else {
+      // Push all term nodes into the filtered nodes array
+      graph.nodes.forEach(node => isTerm(node) && filteredNodes.push(node));
+      // Push all term relation pairs into the filtered edges array
+      termCoincidence.uniquePairs().forEach(([source, target]) => filteredEdges.push({
+        source,
+        target,
+      }));
+    }
+
+    // graph.nodes.forEach((node) => {
+    //   // Only store non-post nodes
+    //   if (node.type !== 'post') {
+    //     filteredNodes.push(node);
+    //     return;
+    //   }
+    //   const categoriesAndTags = node.categories.concat(node.tags);
+    //   // For post nodes, build edges for each combination of tags and categories
+    //   categoriesAndTags.forEach((termId) => {
+    //     categoriesAndTags.forEach((coincidentTermId) => {
+    //       if (termId === coincidentTermId) {
+    //         return;
+    //       }
+    //       const source = graph.nodesMap[termId];
+    //       const target = graph.nodesMap[coincidentTermId];
+    //       if (selectedNode) {
+    //         // If a node is selected, skip edges that do not connect to it
+    //         if (termId !== selectedNode.id && coincidentTermId !== selectedNode.id) {
+    //           return;
+    //         }
+    //       }
+    //       filteredEdges.push({
+    //         source: termId,
+    //         target: coincidentTermId,
+    //         x1: source && source.x,
+    //         y1: source && source.y,
+    //         x2: target && target.x,
+    //         y2: target && target.y,
+    //       });
+    //     });
+
+    //   })
+    // });
+
+    return {
+      nodes: filteredNodes,
+      edges: filteredEdges,
+    };
   }
 
   runSimulation() {
     if (this.simulation) {
       this.simulation.stop();
     }
-    const graph = this.makeNodes();
+    const { selectedNode } = this.state;
+    const selectedNodeId = selectedNode && selectedNode.id;
+    const filteredGraph = this.filterNodes(this.graph, selectedNode);
+    console.log(filteredGraph);
     const svg = select(this.svg);
     const linksGroup = svg.select('.edges');
     const nodesGroup = svg.select('.nodes');
 
     const links = linksGroup
       .selectAll('line')
-      .data(graph.edges);
+      .data(filteredGraph.edges, (d) => {
+        const {source, target} = d;
+        return [source, target].sort().join();
+      });
+    links.exit()
+      .remove();
     links.enter().append('line')
-        .classed(classes.edge, true);
+      .classed(classes.edge, true);
 
     const nodes = nodesGroup
       .selectAll('circle')
-      .data(graph.nodes, d => d.id);
+      .data(filteredGraph.nodes, d => d.id);
     nodes.exit().remove();
-    nodes.enter().append('circle')
+    const enteringNodes = nodes.enter().append('circle')
       .attr('class', d => `${classes.node} ${classes[d.type]}`)
       .attr('r', d => radius(d))
-      .attr('title', d => d.id);
+      .attr('title', d => d.id)
+      .on('click', (d) => {
+        const { selectedNode } = this.state;
+        if (selectedNode && selectedNode.id === d.id) {
+          this.setState({
+            selectedNode: null
+          }, this.runSimulation);
+        } else {
+          this.setState({
+            selectedNode: d
+          }, this.runSimulation);
+        }
+      });
+    nodes.merge(enteringNodes)
+      .classed(classes.selected, (d) => {
+        const { selectedNode } = this.state;
+        return selectedNode && selectedNode.id === d.id;
+      });
 
-    this.simulation.nodes(graph.nodes);
-    this.simulation.force('links').links(graph.edges);
+    this.simulation.nodes(filteredGraph.nodes);
+    this.simulation.force('links').links(filteredGraph.edges);
     this.simulation.alpha(0.3).restart();
   }
 
@@ -86,7 +222,7 @@ class ForceGraph extends PureComponent {
       .x(width / 2)
       .y(height / 2);
 
-    this.chargeForce = forceManyBody().strength(-200);
+    this.chargeForce = forceManyBody().strength(-600);
 
     this.collisionForce = forceCollide()
       .radius(d => 5 + (d.type === 'post' ? 5 : 10));
@@ -141,10 +277,10 @@ class ForceGraph extends PureComponent {
     const selectNearest = debounce(([x, y]) => {
       const node = this.simulation.find(x, y, 50);
       if (!node) {
-        // svg.selectAll(classSelectors.node).classed(classes.selected, false);
+        // svg.selectAll(classSelectors.node).classed(classes.hover, false);
         return;
       }
-      svg.selectAll(classSelectors.node).classed(classes.selected, d => d === node);
+      svg.selectAll(classSelectors.node).classed(classes.hover, d => d === node);
       onMouseOver(node);
     }, 10);
     svg.on('mousemove', function onMouseMove() {
