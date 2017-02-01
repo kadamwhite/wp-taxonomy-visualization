@@ -33,9 +33,9 @@ class ForceGraph extends PureComponent {
 
     this.graph = {
       nodes: [],
-      edges: [],
+      // edges: [],
       nodesMap: {},
-      edgesMap: {},
+      // edgesMap: {},
     };
 
     this.coincidence = {
@@ -83,17 +83,24 @@ class ForceGraph extends PureComponent {
     const filteredNodes = [];
     const filteredEdges = [];
 
+    window.graph = graph;
+
     if (selectedNode) {
       filteredNodes.push(selectedNode);
-      this.coincidence.all.for(selectedNode.id).forEach((coincidentId) => {
-        if (selectedNode.id === coincidentId) {
-          // A term never connects to itself
-          return;
-        }
+      const coincidentIds = this.coincidence.all.for(selectedNode.id);
+      // Storing and re-using the coincidentIds array reduces the number of
+      // times we need to iterate over every node
+      coincidentIds.forEach((coincidentId) => {
         filteredNodes.push(graph.nodesMap[coincidentId]);
         filteredEdges.push({
           source: selectedNode.id,
           target: coincidentId,
+        });
+      });
+      this.coincidence.terms.secondDegreePairs(selectedNode.id, coincidentIds).forEach((pair) => {
+        filteredEdges.push({
+          source: pair[0],
+          target: pair[1],
         });
       });
     } else {
@@ -106,39 +113,10 @@ class ForceGraph extends PureComponent {
       }));
     }
 
-    // graph.nodes.forEach((node) => {
-    //   // Only store non-post nodes
-    //   if (node.type !== 'post') {
-    //     filteredNodes.push(node);
-    //     return;
-    //   }
-    //   const categoriesAndTags = node.categories.concat(node.tags);
-    //   // For post nodes, build edges for each combination of tags and categories
-    //   categoriesAndTags.forEach((termId) => {
-    //     categoriesAndTags.forEach((coincidentTermId) => {
-    //       if (termId === coincidentTermId) {
-    //         return;
-    //       }
-    //       const source = graph.nodesMap[termId];
-    //       const target = graph.nodesMap[coincidentTermId];
-    //       if (selectedNode) {
-    //         // If a node is selected, skip edges that do not connect to it
-    //         if (termId !== selectedNode.id && coincidentTermId !== selectedNode.id) {
-    //           return;
-    //         }
-    //       }
-    //       filteredEdges.push({
-    //         source: termId,
-    //         target: coincidentTermId,
-    //         x1: source && source.x,
-    //         y1: source && source.y,
-    //         x2: target && target.x,
-    //         y2: target && target.y,
-    //       });
-    //     });
-
-    //   })
-    // });
+    window.filtered = {
+      nodes: filteredNodes,
+      edges: filteredEdges,
+    }
 
     return {
       nodes: filteredNodes,
@@ -168,6 +146,7 @@ class ForceGraph extends PureComponent {
         !this.isSelectedNode(edge.source) && !this.isSelectedNode(edge.target)
       )) :
       filteredGraph.edges;
+    window.filtered.displayEdges = displayEdges;
 
     const links = linksGroup
       .selectAll('line')
@@ -259,7 +238,7 @@ class ForceGraph extends PureComponent {
             /* eslint-disable no-param-reassign */
             d.x = Math.max(radius(d), Math.min(width - radius(d), d.x));
             d.y = Math.max(radius(d), Math.min(height - radius(d), d.y));
-            /* eslint-enale no-param-reassign */
+            /* eslint-enable no-param-reassign */
             return `translate(${d.x},${d.y})`;
           });
 
@@ -283,13 +262,13 @@ class ForceGraph extends PureComponent {
   makeNodes() {
     const { width, height, posts, categories, tags } = this.props;
     const oldNodesMap = this.graph.nodesMap;
-    const oldEdgesMap = this.graph.edgesMap;
+    // const oldEdgesMap = this.graph.edgesMap;
 
     // We will be updating this.graph with new properties
     const nodes = [];
     const edges = [];
     const nodesMap = {};
-    const edgesMap = {};
+    // const edgesMap = {};
 
     // Function to retrieve an existing node, if present, so that X & Y are
     // preserved, but other values updated; otherwise, the provided node is
@@ -308,15 +287,15 @@ class ForceGraph extends PureComponent {
       return newNode;
     }
 
-    function createOrUpdateEdge(edge) {
-      const key = `${edge.source},${edge.target}`;
-      const newEdge = oldEdgesMap[key] ?
-        Object.assign({}, oldEdgesMap[key], edge) :
-        edge;
-      edgesMap[key] = newEdge;
-      edges.push(newEdge);
-      return newEdge;
-    }
+    // function createOrUpdateEdge(edge) {
+    //   const key = `${edge.source},${edge.target}`;
+    //   const newEdge = oldEdgesMap[key] ?
+    //     Object.assign({}, oldEdgesMap[key], edge) :
+    //     edge;
+    //   edgesMap[key] = newEdge;
+    //   edges.push(newEdge);
+    //   return newEdge;
+    // }
 
     // Populate new array and dictionary with taxonomy information
     [
@@ -359,16 +338,17 @@ class ForceGraph extends PureComponent {
             type: taxonomy.type,
           });
         }
-        createOrUpdateEdge({
-          source: post.id,
-          target: term.toString(),
-          count: nodesMap[term].count,
-        });
+        // createOrUpdateEdge({
+        //   source: post.id,
+        //   target: term.toString(),
+        //   count: nodesMap[term].count,
+        // });
       }));
     }));
 
     this.coincidence.all.clear();
     this.coincidence.terms.clear();
+    window.coincidence = this.coincidence;
 
     // Categories and tags relate to each other only indirectly
     nodes.filter(node => !isTerm(node)).forEach((node) => {
@@ -391,8 +371,8 @@ class ForceGraph extends PureComponent {
     // Update graph object
     this.graph.nodes = nodes;
     this.graph.nodesMap = nodesMap;
-    this.graph.edges = edges;
-    this.graph.edgesMap = edgesMap;
+    // this.graph.edges = edges;
+    // this.graph.edgesMap = edgesMap;
 
     return this.graph;
   }

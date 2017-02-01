@@ -50,9 +50,8 @@ export default class CoincidenceMatrix {
     return Object.keys(uniquePairs).map(pair => pair.split(','));
   }
 
-  secondDegreePairs(id) {
+  secondDegreePairs(targetId, ids = this.for(targetId)) {
     const uniquePairs = {};
-    const ids = this.for(id);
     ids.forEach((id) => {
       ids.forEach((coincidentId) => {
         if (this.has(id, coincidentId)) {

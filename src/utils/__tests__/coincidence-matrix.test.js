@@ -88,6 +88,7 @@ describe('CoincidenceMatrix', () => {
     matrix.set(4, 6);
     matrix.set(5, 6);
     expect(matrix.for(1).sort()).toEqual(['2', '3', '4', '5', '6']);
+    expect(matrix.for(5).sort()).toEqual(['1', '2', '4', '6']);
   });
 
   it('can be used to retrieve second-degree connections', () => {
@@ -123,6 +124,34 @@ describe('CoincidenceMatrix', () => {
       ['1', '5'],
       ['1', '6'],
       ['5', '6'],
+    ]);
+  });
+
+  it('can be used to retrieve a subset of second-degree connections', () => {
+    matrix.set(1, 2);
+    matrix.set(1, 3);
+    matrix.set(1, 4);
+    matrix.set(1, 5);
+    matrix.set(1, 6);
+    matrix.set(2, 3);
+    matrix.set(2, 5);
+    matrix.set(3, 4);
+    matrix.set(4, 5);
+    matrix.set(4, 6);
+    matrix.set(5, 6);
+    const sortByFirstMember = (a, b) => a[0] - b[0];
+    const result1 = matrix.secondDegreePairs(1, [2, 3, 4]).sort(sortByFirstMember);
+    expect(result1).toEqual([
+      ['2', '3'],
+      ['3', '4'],
+    ]);
+    const result2 = matrix.secondDegreePairs(2, [3, 4]).sort(sortByFirstMember);
+    expect(result2).toEqual([
+      ['3', '4'],
+    ]);
+    const result4 = matrix.secondDegreePairs(4, [2, 3]).sort(sortByFirstMember);
+    expect(result4).toEqual([
+      ['2', '3'],
     ]);
   });
 
