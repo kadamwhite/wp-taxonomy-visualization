@@ -13,7 +13,23 @@
     "build": "webpack",
     "start": "webpack-dev-server",
     "lint": "eslint --ext js,jsx src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node jest/run.js"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "jsx",
+      "js",
+      "json"
+    ],
+    "moduleNameMapper": {
+      "^.+\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/jest/fileStub.js",
+      "^.+\\.(scss|css)$": "identity-obj-proxy"
+    },
+    "testPathIgnorePatterns": [
+      "<rootDir>/(build|docs|node_modules)/"
+    ],
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(js|jsx)$"
   },
   "dependencies": {
     "d3": "^4.4.4",
@@ -32,11 +48,13 @@
   "devDependencies": {
     "autoprefixer": "^6.7.0",
     "babel-core": "^6.22.1",
+    "babel-jest": "^18.0.0",
     "babel-loader": "^6.2.10",
     "babel-plugin-transform-object-rest-spread": "^6.22.0",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-react": "^6.22.0",
     "css-loader": "^0.26.1",
+    "dotenv": "^4.0.0",
     "eslint": "^3.14.1",
     "eslint-config-airbnb": "^14.0.0",
     "eslint-plugin-import": "^2.2.0",
@@ -46,6 +64,8 @@
     "find-cache-dir": "^0.1.1",
     "hard-source-webpack-plugin": "^0.3.8",
     "html-webpack-plugin": "^2.26.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^18.1.0",
     "node-object-hash": "^1.1.5",
     "postcss-loader": "^1.2.2",
     "style-loader": "^0.13.1",

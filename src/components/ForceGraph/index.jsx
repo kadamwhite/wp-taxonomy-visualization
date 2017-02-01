@@ -10,8 +10,8 @@ import {
 import debounce from 'lodash.debounce';
 import { postNode, taxonomyNode } from '../../prop-types';
 import classes from './ForceGraph.styl';
-import { valueChanged } from '../../util';
-import CoincidenceMatrix from '../../coincidence-matrix';
+import { valueChanged } from '../../utils/object-utils';
+import CoincidenceMatrix from '../../utils/coincidence-matrix';
 
 const classSelectors = Object.keys(classes)
   .reduce((selectors, className) => Object.assign({
@@ -369,11 +369,9 @@ class ForceGraph extends PureComponent {
 
     this.coincidence.all.clear();
     this.coincidence.terms.clear();
-    nodes.forEach((node) => {
-      if (isTerm(node)) {
-        // Categories and tags relate to each other only indirectly
-        return;
-      }
+
+    // Categories and tags relate to each other only indirectly
+    nodes.filter(node => !isTerm(node)).forEach((node) => {
       // Build a representation of what tags coincide
       const categoriesAndTags = node.categories.concat(node.tags);
       categoriesAndTags.forEach((termId) => {

@@ -11,5 +11,10 @@
     "react-hot-loader/babel",
     // Enables usage of object rest spread in arguments
     "transform-object-rest-spread"
-  ]
+  ],
+  "env": {
+    "test": {
+      "plugins": ["transform-es2015-modules-commonjs"]
+    }
+  }
 }
