@@ -4,11 +4,11 @@ import { connect } from 'react-redux';
 import { postNode, taxonomyNode } from '../prop-types';
 
 import {
-//   addPosts,
-//   addTags,
-//   addCategories,
+  // addPosts,
+  // addTags,
+  // addCategories,
   selectNode,
-  deselectNode,
+  // deselectNode,
 } from '../actions';
 
 // import {
@@ -22,19 +22,8 @@ import ForceGraph from '../components/ForceGraph';
 class ForceGraphContainer extends PureComponent {
 
   componentDidMount() {
-  //   const { dispatch } = this.props;
-
-  //   getAllTags((tags) => {
-  //     dispatch(addTags(tags));
-  //   }).catch(e => console.error(e));
-
-  //   getAllCategories((cats) => {
-  //     dispatch(addCategories(cats));
-  //   }).catch(e => console.error(e));
-
-  //   getAllPosts((posts) => {
-  //     dispatch(addPosts(posts));
-  //   }).catch(e => console.error(e));
+    // const { requestData } = this.props;
+    // requestData().catch(e => console.error(e));
   }
 
   render() {
@@ -42,7 +31,7 @@ class ForceGraphContainer extends PureComponent {
       posts,
       categories,
       tags,
-      onDeselectNode,
+      // onDeselectNode,
       onSelectNode,
     } = this.props;
 
@@ -54,14 +43,14 @@ class ForceGraphContainer extends PureComponent {
         categories={categories}
         tags={tags}
         onMouseOver={onSelectNode}
-        onMouseOut={onDeselectNode}
       />
     );
   }
 }
 
 ForceGraphContainer.propTypes = {
-  // dispatch: PropTypes.func.isRequired,
+  requestData: PropTypes.func.isRequired,
+  onSelectNode: PropTypes.func.isRequired,
   posts: PropTypes.arrayOf(postNode).isRequired,
   categories: PropTypes.arrayOf(taxonomyNode).isRequired,
   tags: PropTypes.arrayOf(taxonomyNode).isRequired,
@@ -71,12 +60,17 @@ const mapStateToProps = state => ({
   posts: state.posts,
   tags: state.tags,
   categories: state.categories,
-  selectedNodeId: state.selected ? state.selected.id : null,
+  // selectedNodeId: state.selected ? state.selected.id : null,
 });
 
 const mapDispatchToProps = dispatch => ({
+  requestData: () => Promise.all([
+    getAllTags((tags) => dispatch(addTags(tags))),
+    getAllCategories((cats) => dispatch(addCategories(cats))),
+    getAllPosts((posts) => dispatch(addPosts(posts))),
+  ]),
   onSelectNode: (node) => dispatch(selectNode(node)),
-  onDeselectNode: () => dispatch(deselectNode())
+  // onDeselectNode: () => dispatch(deselectNode())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ForceGraphContainer);
