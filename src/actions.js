@@ -1,11 +1,3 @@
-export const SET_POSTS = 'SET_POSTS';
-export function setPosts(posts) {
-  return {
-    type: SET_POSTS,
-    payload: posts,
-  };
-}
-
 export const ADD_POSTS = 'ADD_POSTS';
 export function addPosts(posts) {
   return {
@@ -14,19 +6,11 @@ export function addPosts(posts) {
   };
 }
 
-export const ADD_TAGS = 'ADD_TAGS';
-export function addTags(tags) {
+export const ADD_TERMS = 'ADD_TERMS';
+export function addTerms(terms) {
   return {
-    type: ADD_TAGS,
-    payload: tags,
-  };
-}
-
-export const ADD_CATEGORIES = 'ADD_CATEGORIES';
-export function addCategories(cats) {
-  return {
-    type: ADD_CATEGORIES,
-    payload: cats,
+    type: ADD_TERMS,
+    payload: terms,
   };
 }
 

@@ -7,7 +7,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 module.exports = {
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
 
   context: resolve(__dirname, 'src'),
 

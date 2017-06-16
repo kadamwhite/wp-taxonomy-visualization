@@ -5,17 +5,12 @@ import { postNode, taxonomyNode } from '../prop-types';
 
 import {
   // addPosts,
-  // addTags,
-  // addCategories,
+  // addTerms,
   selectNode,
   // deselectNode,
 } from '../actions';
 
-// import {
-//   getAllPosts,
-//   getAllTags,
-//   getAllCategories,
-// } from '../services/api';
+// import { getAllContent } from '../services/api';
 
 import ForceGraph from '../components/ForceGraph';
 
@@ -29,8 +24,7 @@ class ForceGraphContainer extends PureComponent {
   render() {
     const {
       posts,
-      categories,
-      tags,
+      terms,
       // onDeselectNode,
       onSelectNode,
     } = this.props;
@@ -40,8 +34,7 @@ class ForceGraphContainer extends PureComponent {
         width={1200}
         height={600}
         posts={posts}
-        categories={categories}
-        tags={tags}
+        terms={terms}
         onMouseOver={onSelectNode}
       />
     );
@@ -52,23 +45,20 @@ ForceGraphContainer.propTypes = {
   // requestData: PropTypes.func.isRequired,
   onSelectNode: PropTypes.func.isRequired,
   posts: PropTypes.arrayOf(postNode).isRequired,
-  categories: PropTypes.arrayOf(taxonomyNode).isRequired,
-  tags: PropTypes.arrayOf(taxonomyNode).isRequired,
+  terms: PropTypes.arrayOf(taxonomyNode).isRequired,
 };
 
 const mapStateToProps = state => ({
   posts: state.posts,
-  tags: state.tags,
-  categories: state.categories,
+  terms: state.terms,
   // selectedNodeId: state.selected ? state.selected.id : null,
 });
 
 const mapDispatchToProps = dispatch => ({
-  // requestData: () => Promise.all([
-  //   getAllTags(tags => dispatch(addTags(tags))),
-  //   getAllCategories(cats => dispatch(addCategories(cats))),
-  //   getAllPosts(posts => dispatch(addPosts(posts))),
-  // ]),
+  // requestData: () => getAllContent(
+  //   posts => dispatch(addPosts(posts)),
+  //   terms => dispatch(addTerms(terms)),
+  // ),
   onSelectNode: node => dispatch(selectNode(node)),
   // onDeselectNode: () => dispatch(deselectNode())
 });

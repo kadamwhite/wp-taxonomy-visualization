@@ -11,6 +11,17 @@ import App from './components/App';
 
 import makeStore from './store';
 
+// import { getAllContent } from './services/api';
+// getAllContent(function onPostBatch(slug, batch) {
+//   console.log('Received a batch of ' + slug);
+//   console.log(batch);
+// }, function onTermBatch(termSlug, batch) {
+//   console.log('Received a batch of ' + termSlug);
+//   console.log(batch);
+// })
+//   .then(r => console.log(r))
+//   .catch(e => console.log(e));
+
 const store = makeStore();
 window.store = store;
 

@@ -5,7 +5,7 @@ export const taxonomyNode = PropTypes.shape({
   id: PropTypes.string.isRequired,
   description: PropTypes.string,
   count: PropTypes.number,
-  type: PropTypes.string,
+  type: PropTypes.string.isRequired,
 });
 
 export const postNode = PropTypes.shape({
@@ -13,6 +13,7 @@ export const postNode = PropTypes.shape({
   id: PropTypes.string.isRequired,
   categories: PropTypes.arrayOf(PropTypes.string).isRequired,
   tags: PropTypes.arrayOf(PropTypes.string).isRequired,
+  type: PropTypes.string.isRequired,
 });
 
 export const anyNode = PropTypes.shape({
@@ -22,4 +23,5 @@ export const anyNode = PropTypes.shape({
   tags: PropTypes.arrayOf(PropTypes.string),
   description: PropTypes.string,
   count: PropTypes.number,
+  type: PropTypes.string.isRequired,
 });

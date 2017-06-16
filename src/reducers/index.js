@@ -1,44 +1,31 @@
 import { combineReducers } from 'redux';
 import * as actionTypes from '../actions';
 
-export function postsReducer(state = [], action) {
-  if (action.type === actionTypes.SET_POSTS) {
-    return action.payload;
-  }
+const formatTermId = term => `t${term}`;
 
+export function postsReducer(state = [], action) {
   if (action.type === actionTypes.ADD_POSTS) {
     // Limit to only certain keys
     return state.concat(action.payload.map(post => ({
       title: post.title.rendered,
       id: post.id.toString(),
-      categories: post.categories.map(term => `t${term}`),
-      tags: post.tags.map(term => `t${term}`),
+      categories: post.categories.map(formatTermId),
+      tags: post.tags.map(formatTermId),
+      type: post.type,
     })));
   }
 
   return state;
 }
 
-export function categoriesReducer(state = [], action) {
-  if (action.type === actionTypes.ADD_CATEGORIES) {
-    return state.concat(action.payload.map(cat => ({
-      title: cat.name,
-      id: `t${cat.id}`,
-      description: cat.description,
-      count: cat.count,
-    })));
-  }
-
-  return state;
-}
-
-export function tagsReducer(state = [], action) {
-  if (action.type === actionTypes.ADD_TAGS) {
-    return state.concat(action.payload.map(tag => ({
-      title: tag.name,
-      id: `t${tag.id}`,
-      description: tag.description,
-      count: tag.count,
+export function termsReducer(state = [], action) {
+  if (action.type === actionTypes.ADD_TERMS) {
+    return state.concat(action.payload.map(term => ({
+      title: term.name,
+      type: term.type,
+      id: formatTermId(term.id),
+      description: term.description,
+      count: term.count,
     })));
   }
 
@@ -67,7 +54,6 @@ export function selectedNodeReducer(state = null, action) {
  */
 export default combineReducers({
   posts: postsReducer,
-  categories: categoriesReducer,
-  tags: tagsReducer,
+  terms: termsReducer,
   selected: selectedNodeReducer,
 });

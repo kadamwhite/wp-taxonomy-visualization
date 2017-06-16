@@ -12,6 +12,10 @@ describe('CoincidenceMatrix', () => {
     expect(CoincidenceMatrix).toBeInstanceOf(Function);
   });
 
+  it('can be used as a constructor', () => {
+    expect(matrix).toBeInstanceOf(CoincidenceMatrix);
+  });
+
   it('constructs a node tree', () => {
     expect(matrix.nodes).toBeDefined();
   });
@@ -51,8 +55,23 @@ describe('CoincidenceMatrix', () => {
     matrix.set(16, 1);
     matrix.set(19, 1);
     expect(matrix.has(1, 16)).toBe(true);
+    expect(matrix.has(16, 1)).toBe(true);
     expect(matrix.has(1, 19)).toBe(true);
+    expect(matrix.has(19, 1)).toBe(true);
     expect(matrix.has(16, 19)).toBe(false);
+    expect(matrix.has(19, 16)).toBe(false);
+  });
+
+  it('can retrieve the count of co-occurrences for two IDs', () => {
+    matrix.set(1, 16);
+    matrix.set(16, 1);
+    matrix.set(19, 1);
+    expect(matrix.degree(1, 16)).toBe(2);
+    expect(matrix.degree(16, 1)).toBe(2);
+    expect(matrix.degree(1, 19)).toBe(1);
+    expect(matrix.degree(19, 1)).toBe(1);
+    expect(matrix.degree(16, 19)).toBe(0);
+    expect(matrix.degree(19, 16)).toBe(0);
   });
 
   it('can return a list of registered IDs', () => {

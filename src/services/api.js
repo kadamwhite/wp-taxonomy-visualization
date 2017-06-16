@@ -78,3 +78,38 @@ export function getAllTags(batchCb) {
   return all(api.tags().perPage(5), batchCb);
   // return getAllInParallel(() => api.tags(), 10, 5, batchCb);
 }
+
+export function getAllContent(onPostBatch, onTermBatch) {
+  return Promise.all([
+    api.types(),
+    api.taxonomies(),
+  ]).then(([types, taxonomies]) => {
+    const getAllObjects = Object.keys(types).reduce((lastProm, key) => lastProm.then(() => {
+      const type = types[key];
+      if (!type.taxonomies.length) {
+        // We only care about taxonomy-related objects
+        return;
+      }
+      const factory = api.registerRoute('wp/v2', `/${type.rest_base}`).bind(api);
+      return all(factory().perPage(20), (batch) => {
+        const typedObjects = batch.map(obj => Object.assign(obj, {
+          type: type.slug
+        }));
+        onPostBatch(typedObjects);
+      });
+    }), Promise.resolve());
+
+    const getAllTerms = Object.keys(taxonomies).reduce((lastProm, key) => lastProm.then(() => {
+      const tax = taxonomies[key];
+      const factory = api.registerRoute('wp/v2', `/${tax.rest_base}`).bind(api);
+      return all(factory().perPage(20), (batch) => {
+        const typedTerms = batch.map(term => Object.assign(term, {
+          type: tax.slug
+        }));
+        onTermBatch(typedTerms)
+      });
+    }), Promise.resolve());
+
+    return Promise.all([getAllObjects, getAllTerms]);
+  });
+}

@@ -1,3 +1,7 @@
+function incrementOrSet(val) {
+  return val ? val + 1 : 1;
+}
+
 export default class CoincidenceMatrix {
   constructor() {
     this.nodes = {};
@@ -12,13 +16,17 @@ export default class CoincidenceMatrix {
       return;
     }
     this.nodes[id1] = this.nodes[id1] || {};
-    this.nodes[id1][id2] = true;
+    this.nodes[id1][id2] = incrementOrSet(this.nodes[id1][id2]);
     this.nodes[id2] = this.nodes[id2] || {};
-    this.nodes[id2][id1] = true;
+    this.nodes[id2][id1] = incrementOrSet(this.nodes[id2][id1]);
   }
 
   has(id1, id2) {
     return !!(this.nodes[id1] && this.nodes[id1][id2]);
+  }
+
+  degree(id1, id2) {
+    return this.has(id1, id2) ? this.nodes[id1][id2] : 0;
   }
 
   for(id) {

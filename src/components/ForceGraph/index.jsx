@@ -7,6 +7,10 @@ import {
   forceCollide,
   forceLink,
 } from 'd3-force';
+import {
+  scaleOrdinal,
+  schemeCategory10,
+} from 'd3-scale';
 import debounce from 'lodash.debounce';
 import { postNode, taxonomyNode } from '../../prop-types';
 import classes from './ForceGraph.styl';
@@ -23,7 +27,7 @@ function radius(d) {
 }
 
 function isTerm(node) {
-  return node.type === 'category' || node.type === 'tag';
+  return node.type === 'category' || node.type === 'tag' || node.type === 'post_tag';
 }
 
 class ForceGraph extends PureComponent {
@@ -37,6 +41,8 @@ class ForceGraph extends PureComponent {
       nodesMap: {},
       // edgesMap: {},
     };
+
+    this.colorScale = scaleOrdinal(schemeCategory10);
 
     this.coincidence = {
       all: new CoincidenceMatrix(),
@@ -59,7 +65,7 @@ class ForceGraph extends PureComponent {
   }
 
   shouldComponentUpdate(nextProps) {
-    const dataPropsChanged = valueChanged(this.props, nextProps, ['posts', 'categories', 'tags']);
+    const dataPropsChanged = valueChanged(this.props, nextProps, ['posts', 'terms']);
     const dimensionsChanged = valueChanged(this.props, nextProps, ['width', 'height']);
     // const selectionChanged = valueChanged(this.state, nextState, ['selectedNode']);
 
@@ -260,15 +266,13 @@ class ForceGraph extends PureComponent {
   }
 
   makeNodes() {
-    const { width, height, posts, categories, tags } = this.props;
+    const { width, height, posts, terms } = this.props;
     const oldNodesMap = this.graph.nodesMap;
-    // const oldEdgesMap = this.graph.edgesMap;
 
     // We will be updating this.graph with new properties
     const nodes = [];
     const edges = [];
     const nodesMap = {};
-    // const edgesMap = {};
 
     // Function to retrieve an existing node, if present, so that X & Y are
     // preserved, but other values updated; otherwise, the provided node is
@@ -276,7 +280,7 @@ class ForceGraph extends PureComponent {
     // Returns the node.
     function createOrUpdateNode(node) {
       const newNode = oldNodesMap[node.id] ?
-        Object.assign({}, oldNodesMap[node.id], node) :
+        Object.assign(oldNodesMap[node.id], node) :
         Object.assign({
           // Initial position in center
           x: width / 2,
@@ -287,64 +291,54 @@ class ForceGraph extends PureComponent {
       return newNode;
     }
 
-    // function createOrUpdateEdge(edge) {
-    //   const key = `${edge.source},${edge.target}`;
-    //   const newEdge = oldEdgesMap[key] ?
-    //     Object.assign({}, oldEdgesMap[key], edge) :
-    //     edge;
-    //   edgesMap[key] = newEdge;
-    //   edges.push(newEdge);
-    //   return newEdge;
-    // }
+    const uniqueTypes = {};
 
     // Populate new array and dictionary with taxonomy information
-    [
-      { collection: categories, type: 'category' },
-      { collection: tags, type: 'tag' },
-    ].forEach(taxonomy => taxonomy.collection.forEach((term) => {
+    terms.forEach((term) => {
       createOrUpdateNode({
         title: term.title,
         id: term.id,
         description: term.description,
         count: term.count,
-        type: taxonomy.type,
+        type: term.type,
       });
-    }));
+      uniqueTypes[term.type] = true;
+    });
 
     // Populate new array and dictionary with post object information
-    [
-      posts,
-    ].forEach(postTypeCollection => postTypeCollection.forEach((post) => {
+    posts.forEach((post) => {
       createOrUpdateNode({
         title: post.title,
         id: post.id,
         categories: post.categories,
         tags: post.tags,
-        type: 'post',
+        type: post.type,
       });
+      uniqueTypes[post.type] = true;
 
-      [
-        { collection: post.categories, type: 'category' },
-        { collection: post.tags, type: 'tag' },
-      ].forEach(taxonomy => taxonomy.collection.forEach((term) => {
+      const cats = Array.isArray(post.categories) ?
+        post.categories.map(term => ({ id: term, type: 'category' })) :
+        [];
+      const tags = Array.isArray(post.tags) ?
+        post.tags.map(term => ({ id: term, type: 'tag' })) :
+        [];
+      const categoriesAndTags = cats.concat(tags);
+      categoriesAndTags.forEach((term) => {
         // D3 will throw an error if an edge is encountered for a node that
         // does not exist, so ensure the relevant node has been created
         if (!nodesMap[term]) {
           createOrUpdateNode({
             title: '',
-            id: term.toString(),
+            id: term.id.toString(),
             description: '',
             count: 1,
-            type: taxonomy.type,
+            type: term.type,
           });
         }
-        // createOrUpdateEdge({
-        //   source: post.id,
-        //   target: term.toString(),
-        //   count: nodesMap[term].count,
-        // });
-      }));
-    }));
+      });
+    });
+
+    this.colorScale.domain(Object.keys(uniqueTypes));
 
     this.coincidence.all.clear();
     this.coincidence.terms.clear();
@@ -353,7 +347,9 @@ class ForceGraph extends PureComponent {
     // Categories and tags relate to each other only indirectly
     nodes.filter(node => !isTerm(node)).forEach((node) => {
       // Build a representation of what tags coincide
-      const categoriesAndTags = node.categories.concat(node.tags);
+      const cats = Array.isArray(node.categories) ? node.categories : [];
+      const tags = Array.isArray(node.tags) ? node.tags : [];
+      const categoriesAndTags = cats.concat(tags);
       categoriesAndTags.forEach((termId) => {
         categoriesAndTags.forEach((coincidentTermId) => {
           // The post relates to each term
@@ -401,8 +397,7 @@ ForceGraph.propTypes = {
   // onMouseOut: PropTypes.func.isRequired,
   height: PropTypes.number.isRequired,
   posts: PropTypes.arrayOf(postNode).isRequired,
-  categories: PropTypes.arrayOf(taxonomyNode).isRequired,
-  tags: PropTypes.arrayOf(taxonomyNode).isRequired,
+  terms: PropTypes.arrayOf(taxonomyNode).isRequired,
   width: PropTypes.number.isRequired,
 };
 
